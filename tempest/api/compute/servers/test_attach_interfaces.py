@@ -17,6 +17,7 @@ import time
 
 from tempest_lib import exceptions as lib_exc
 
+from tempest.common import fixed_network
 from tempest.api.compute import base
 from tempest import config
 from tempest import exceptions
@@ -67,7 +68,9 @@ class AttachInterfacesTestJSON(base.BaseV2ComputeTest):
         return server, ifs
 
     def _test_create_interface(self, server):
-        iface = self.client.create_interface(server['id'])
+        network = self.get_tenant_network()
+        net_id = network['id'] if 'id' in network.keys() else None
+        iface = self.client.create_interface(server['id'], network_id=net_id)
         iface = self.client.wait_for_interface_status(
             server['id'], iface['port_id'], 'ACTIVE')
         self._check_interface(iface)
@@ -123,6 +126,7 @@ class AttachInterfacesTestJSON(base.BaseV2ComputeTest):
     @test.services('network')
     def test_create_list_show_delete_interfaces(self):
         server, ifs = self._create_server_get_interfaces()
+	print "test_create_list_show_delete_interfaces", server['id']
         interface_count = len(ifs)
         self.assertTrue(interface_count > 0)
         self._check_interface(ifs[0])
@@ -154,6 +158,7 @@ class AttachInterfacesTestJSON(base.BaseV2ComputeTest):
     def test_add_remove_fixed_ip(self):
         # Add and Remove the fixed IP to server.
         server, ifs = self._create_server_get_interfaces()
+	print "test_add_remove_fixed_ip", server['id']
         interface_count = len(ifs)
         self.assertTrue(interface_count > 0)
         self._check_interface(ifs[0])

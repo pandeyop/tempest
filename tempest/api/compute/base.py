@@ -46,6 +46,25 @@ class BaseComputeTest(tempest.test.BaseTestCase):
                    cls._api_version)
             raise exceptions.InvalidConfiguration(message=msg)
 
+
+    @classmethod
+    def clear_volumes(cls):
+        """ Deletes the bootable volumes created. """
+        if hasattr(cls, "volumes"):
+            LOG.debug('Clearing volumes: %s', ','.join(
+                volume['id'] for volume in cls.volumes))
+            for volume in cls.volumes:
+                try:
+                    cls.delete_volume(volume['id'])
+                except lib_exc.NotFound:
+                    # Volumes are already cleaned
+                    pass
+                except Exception:
+                    LOG.exception('Deleting volume %s failed' % volume['id'])
+
+
+
+
     @classmethod
     def setup_credentials(cls):
         cls.set_network_resources()
@@ -111,6 +130,7 @@ class BaseComputeTest(tempest.test.BaseTestCase):
     def resource_cleanup(cls):
         cls.clear_images()
         cls.clear_servers()
+        #cls.clear_volumes()
         cls.clear_security_groups()
         cls.clear_server_groups()
         super(BaseComputeTest, cls).resource_cleanup()
@@ -215,6 +235,40 @@ class BaseComputeTest(tempest.test.BaseTestCase):
 
         kwargs = fixed_network.set_networks_kwarg(
             cls.get_tenant_network(), kwargs) or {}
+
+        volume_name = data_utils.rand_name('bootable_vol')
+        create_kwargs ={}
+        if CONF.compute_feature_enabled.boot_from_volume_only:
+            if 'volume_size' in kwargs:
+                size = kwargs.pop('volume_size')
+            else:
+                size = CONF.volume.volume_size
+            if 'volume_id' in kwargs:
+                volume_id = kwargs.pop('volume_id')
+            else:
+                response = cls.volumes_client.create_volume(
+                size=size, imageRef=image_id, display_name=volume_name)
+                volume_id = response['id']
+                cls.volumes_client.wait_for_volume_status(volume_id, "available")
+            bv_map = [{
+                "source_type": "volume",
+                "delete_on_termination": "1",
+                "boot_index": 0,
+                "uuid": volume_id,
+                "device_name": "vda",
+                "volume_id": volume_id,
+                "destination_type": "volume"}]
+
+            create_kwargs = {
+            'block_device_mapping_v2' : bv_map,
+            'max_count': 1,
+            'min_count': 1
+            }
+            image_id = ""
+
+
+        kwargs.update(create_kwargs) 
+
         body = cls.servers_client.create_server(
             name, image_id, flavor, **kwargs)
 

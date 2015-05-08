@@ -69,6 +69,7 @@ class TestServerBasicOps(manager.ScenarioTest):
 
     def boot_instance(self):
         # Create server with image and flavor from input scenario
+	#import pdb;pdb.set_trace()
         security_groups = [{'name': self.security_group['name']}]
         create_kwargs = {
             'key_name': self.keypair['name'],

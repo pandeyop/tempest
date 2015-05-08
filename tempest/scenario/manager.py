@@ -158,7 +158,7 @@ class ScenarioTest(tempest.test.BaseTestCase):
     # resp part which is not used in scenario tests
 
     def create_keypair(self, client=None):
-        if not client:
+	if not client:
             client = self.keypairs_client
         name = data_utils.rand_name(self.__class__.__name__)
         # We don't need to create a keypair by pubkey in scenario
@@ -188,7 +188,28 @@ class ScenarioTest(tempest.test.BaseTestCase):
         network = self.get_tenant_network()
         create_kwargs = fixed_network.set_networks_kwarg(network,
                                                          create_kwargs)
+        bdm_args ={}
+        if CONF.compute_feature_enabled.boot_from_volume_only:
+            if 'volume_size' in create_kwargs:
+                vol_size = kwargs.pop('volume_size')
+            else:
+                vol_size = CONF.volume.volume_size
+            bv_map = [{
+                "source_type": "image",
+                "destination_type": "volume",
+                "delete_on_termination": "1",
+                "boot_index": 0,
+                "uuid": image,
+                "device_name": "vda",
+                "volume_size": str(vol_size)}]
 
+            bdm_args = {
+            'block_device_mapping_v2' : bv_map,
+            }
+            image = ""
+
+
+        create_kwargs.update(bdm_args)
         LOG.debug("Creating a server (name: %s, image: %s, flavor: %s)",
                   name, image, flavor)
         server = self.servers_client.create_server(name, image, flavor,
