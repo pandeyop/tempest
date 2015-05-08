@@ -165,7 +165,30 @@ class BaseVolumeTest(tempest.test.BaseTestCase):
     @classmethod
     def create_server(cls, name, **kwargs):
         network = cls.get_tenant_network()
+        bdm_args ={}
+        if CONF.compute_feature_enabled.boot_from_volume_only:
+            if 'volume_size' in kwargs:
+                vol_size = kwargs.pop('volume_size')
+            else:
+                vol_size = CONF.volume.volume_size
+            bv_map = [{
+                "source_type": "image",
+                "destination_type": "volume",
+                "delete_on_termination": "1",
+                "boot_index": 0,
+                "uuid": cls.image_ref,
+                "device_name": "vda",
+                "volume_size": str(vol_size)}]
+
+            bdm_args = {
+            'block_device_mapping_v2' : bv_map,
+            }
+            cls.image_ref = ""
+
+ 
+        kwargs.update(bdm_args)
         network_kwargs = fixed_network.set_networks_kwarg(network, kwargs)
+#	import pdb;pdb.set_trace()
         return cls.servers_client.create_server(name,
                                                 cls.image_ref,
                                                 cls.flavor_ref,
