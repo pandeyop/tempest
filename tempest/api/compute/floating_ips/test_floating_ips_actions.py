@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from tempest_lib.common.utils import data_utils
 from tempest_lib import exceptions as lib_exc
 
 from tempest.api.compute.floating_ips import base
+from tempest.common.utils import data_utils
 from tempest import test
 
 
@@ -67,7 +67,7 @@ class FloatingIPsTestJSON(base.BaseFloatingIPsTest):
         self.addCleanup(self.client.delete_floating_ip,
                         floating_ip_id_allocated)
         floating_ip_details = \
-            self.client.get_floating_ip_details(floating_ip_id_allocated)
+            self.client.show_floating_ip(floating_ip_id_allocated)
         # Checking if the details of allocated IP is in list of floating IP
         body = self.client.list_floating_ips()
         self.assertIn(floating_ip_details, body)
@@ -97,7 +97,7 @@ class FloatingIPsTestJSON(base.BaseFloatingIPsTest):
             self.server_id)
 
         # Check instance_id in the floating_ip body
-        body = self.client.get_floating_ip_details(self.floating_ip_id)
+        body = self.client.show_floating_ip(self.floating_ip_id)
         self.assertEqual(self.server_id, body['instance_id'])
 
         # Disassociation of floating IP that was associated in this method

@@ -18,6 +18,7 @@ from tempest_lib.common.utils import data_utils
 from tempest_lib import decorators
 
 from tempest.api.network import base_security_groups as base
+from tempest.common.utils import data_utils
 from tempest import config
 from tempest import test
 

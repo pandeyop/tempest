@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from tempest_lib.common.utils import data_utils
-
 from tempest.api.identity import base
+from tempest.common.utils import data_utils
 from tempest import test
 
 
@@ -53,7 +52,7 @@ class UsersV3TestJSON(base.BaseIdentityV3AdminTest):
         self.assertEqual(project['id'],
                          update_user['project_id'])
         self.assertEqual(u_email2, update_user['email'])
-        self.assertEqual('false', str(update_user['enabled']).lower())
+        self.assertEqual(False, update_user['enabled'])
         # GET by id after updation
         new_user_get = self.client.get_user(user['id'])
         # Assert response body of GET after updation
@@ -62,7 +61,7 @@ class UsersV3TestJSON(base.BaseIdentityV3AdminTest):
         self.assertEqual(project['id'],
                          new_user_get['project_id'])
         self.assertEqual(u_email2, new_user_get['email'])
-        self.assertEqual('false', str(new_user_get['enabled']).lower())
+        self.assertEqual(False, new_user_get['enabled'])
 
     @test.idempotent_id('2d223a0e-e457-4a70-9fb1-febe027a0ff9')
     def test_update_user_password(self):

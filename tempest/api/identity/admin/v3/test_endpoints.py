@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from tempest_lib.common.utils import data_utils
-
 from tempest.api.identity import base
+from tempest.common.utils import data_utils
 from tempest import test
 
 
@@ -126,4 +125,4 @@ class EndPointsTestJSON(base.BaseIdentityV3AdminTest):
         self.assertEqual(interface2, endpoint['interface'])
         self.assertEqual(url2, endpoint['url'])
         self.assertEqual(region2, endpoint['region'])
-        self.assertEqual('false', str(endpoint['enabled']).lower())
+        self.assertEqual(False, endpoint['enabled'])
