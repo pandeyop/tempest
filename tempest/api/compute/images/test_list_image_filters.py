@@ -17,11 +17,13 @@ import time
 
 from oslo_log import log as logging
 import six
-from tempest_lib.common.utils import data_utils
-from tempest_lib import decorators
 import testtools
 
+from tempest_lib import decorators
+
 from tempest.api.compute import base
+from tempest.common.utils import data_utils
+from tempest.common import waiters
 from tempest import config
 from tempest import test
 
@@ -62,7 +64,7 @@ class ListImageFiltersTestJSON(base.BaseV2ComputeTest):
             time.sleep(1)
             image_file = six.StringIO(('*' * 1024))
             cls.glance_client.update_image(image_id, data=image_file)
-            cls.client.wait_for_image_status(image_id, 'ACTIVE')
+            waiters.wait_for_image_status(cls.client, image_id, 'ACTIVE')
             body = cls.client.show_image(image_id)
             return body
 
